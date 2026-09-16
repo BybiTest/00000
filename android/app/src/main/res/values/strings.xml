@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">CreatorFlow AI</string>
+    <string name="app_persian_name">کریتورفلو AI</string>
+    <string name="developer_name">سیدحمیدموسوی زاده</string>
+    <string name="publisher_name">سیدحمیدموسوی زاده</string>
+    <string name="app_category">AI Productivity / Creator Tools</string>
+    <string name="app_description">An intelligent assistant for creators that helps generate ideas, scripts, captions, content plans, thumbnails concepts, and creator strategies using artificial intelligence.</string>
+    <string name="app_tagline">AI-Powered Creator Studio</string>
+    <string name="daily_hook_formula">Trending Curiosity Gap Hook Formula</string>
+    <string name="hook_retention_badge">84% Retention</string>
+</resources>

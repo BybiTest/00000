@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">کریتورفلو AI</string>
+    <string name="app_persian_name">کریتورفلو AI</string>
+    <string name="developer_name">سیدحمیدموسوی زاده</string>
+    <string name="publisher_name">سیدحمیدموسوی زاده</string>
+    <string name="app_category">بهره‌وری هوش مصنوعی / ابزارهای تولیدکنندگان</string>
+    <string name="app_description">یک دستیار هوشمند برای سازندگان محتوا جهت تولید ایده، سناریو، کپشن، تقویم محتوایی، کاور ویدیو و استراتژی رشد شبکه‌های اجتماعی با هوش مصنوعی.</string>
+    <string name="app_tagline">استودیوی هوشمند تولید محتوا</string>
+    <string name="daily_hook_formula">فرمول قلاب ویروسی روز (کنجکاوی)</string>
+    <string name="hook_retention_badge">۸۴٪ ریتنشن</string>
+</resources>

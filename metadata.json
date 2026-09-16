@@ -1,0 +1,6 @@
+{
+  "name": "CreatorFlow AI",
+  "description": "Professional AI-powered mobile application for content creators (YouTube, Instagram, TikTok) developed by سیدحمیدموسوی زاده. Featuring AI ideas, viral hooks, scriptwriting, captions, thumbnail concepts, content calendar, AI strategist chat, and analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
