@@ -186,6 +186,9 @@ Key Highlights:
       code: `name: Build Android APK and AAB
 on: [push, pull_request, workflow_dispatch]
 
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: "true"
+
 jobs:
   build:
     name: Build Android Release AAB & Debug APK
@@ -194,7 +197,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Setup Node.js 22 LTS (Fixes Node 20 deprecation & lockfile cache errors)
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -206,54 +208,64 @@ jobs:
           npm run build
 
       - name: Set up Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'gradle'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Make Gradlew Executable
+      - name: Accept Android SDK Licenses
+        run: yes | sdkmanager --licenses || true
+
+      - name: Prepare Gradle Wrapper
         run: |
-          if [ -f "./android/gradlew" ]; then
-            chmod +x ./android/gradlew
+          if [ -d "./android" ]; then
+            cd android
           fi
+          mkdir -p gradle/wrapper
+          if [ ! -f "gradle/wrapper/gradle-wrapper.jar" ]; then
+            curl -sLo gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.10.2/gradle/wrapper/gradle-wrapper.jar || true
+          fi
+          chmod +x gradlew || true
 
       - name: Build Android Debug APK
         run: |
           if [ -d "./android" ]; then
-            cd android && (./gradlew assembleDebug --stacktrace || gradle assembleDebug)
-          else
-            ./gradlew assembleDebug --stacktrace || gradle assembleDebug
+            cd android
           fi
+          ./gradlew assembleDebug --stacktrace --no-daemon
 
       - name: Build Android Release AAB
         run: |
           if [ -d "./android" ]; then
-            cd android && (./gradlew bundleRelease --stacktrace || gradle bundleRelease || true)
-          else
-            (./gradlew bundleRelease --stacktrace || gradle bundleRelease || true)
+            cd android
           fi
+          ./gradlew bundleRelease --stacktrace --no-daemon || true
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
-        if: always()
+        if: success()
         with:
           name: creatorflow-ai-debug-apk
           path: |
             android/app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/debug/*.apk
+          if-no-files-found: warn
 
       - name: Upload Release AAB
         uses: actions/upload-artifact@v4
-        if: always()
+        if: success()
         with:
           name: creatorflow-ai-release-aab
           path: |
             android/app/build/outputs/bundle/release/*.aab
-            app/build/outputs/bundle/release/*.aab`
+            app/build/outputs/bundle/release/*.aab
+          if-no-files-found: warn`
     }
   };
 
