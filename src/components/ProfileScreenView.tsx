@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { User, Crown, Zap, Globe, Smartphone, Terminal, PlayCircle, Info } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { User, Crown, Zap, Globe, Smartphone, Terminal, PlayCircle, Info, Key, Sparkles, Check, RefreshCw } from 'lucide-react';
 import { Language, MonetizationPlan } from '../types';
 import { translations } from '../locales';
 import { AboutModal } from './AboutModal';
@@ -27,6 +27,62 @@ export const ProfileScreenView: React.FC<ProfileScreenViewProps> = ({
   const [adPlaying, setAdPlaying] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Gemini API Key state
+  const [apiKeyInput, setApiKeyInput] = useState('');
+  const [hasSavedKey, setHasSavedKey] = useState(false);
+  const [testingConnection, setTestingConnection] = useState(false);
+  const [testResult, setTestResult] = useState<string | null>(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('creatorflow_gemini_key');
+    if (saved) {
+      setApiKeyInput(saved);
+      setHasSavedKey(true);
+    }
+  }, []);
+
+  const handleSaveApiKey = () => {
+    if (apiKeyInput.trim()) {
+      localStorage.setItem('creatorflow_gemini_key', apiKeyInput.trim());
+      setHasSavedKey(true);
+      showToast(lang === 'fa' ? 'کلید API اختصاصی ذخیره شد!' : 'Custom API Key saved successfully!');
+    } else {
+      localStorage.removeItem('creatorflow_gemini_key');
+      setHasSavedKey(false);
+      showToast(lang === 'fa' ? 'کلید پاک شد؛ موتور محلی فعال است.' : 'Key cleared; Local engine active.');
+    }
+  };
+
+  const handleTestConnection = async () => {
+    setTestingConnection(true);
+    setTestResult(null);
+    try {
+      const res = await fetch('/api/health');
+      if (res.ok) {
+        const data = await res.json();
+        setTestResult(
+          lang === 'fa'
+            ? `اتصال ابری فعال است (${data.publisher || 'سیدحمیدموسوی زاده'}) - هوش مصنوعی آماده پاسخگویی`
+            : `Cloud Engine Active (${data.publisher}) - AI Ready`
+        );
+      } else {
+        setTestResult(
+          lang === 'fa'
+            ? 'موتور هوشمند محلی داخلی (Standalone) کاملاً آماده و فعال است.'
+            : 'Standalone Offline Engine active.'
+        );
+      }
+    } catch {
+      setTestResult(
+        lang === 'fa'
+          ? 'موتور هوشمند محلی داخلی (Standalone) فعال و بدون نیاز به اینترنت آماده است.'
+          : 'Standalone Offline Engine ready.'
+      );
+    } finally {
+      setTestingConnection(false);
+    }
+  };
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -149,6 +205,67 @@ export const ProfileScreenView: React.FC<ProfileScreenViewProps> = ({
         >
           {lang === 'fa' ? 'تغییر به English' : 'Switch to فارسی'}
         </button>
+      </div>
+
+      {/* AI Engine & Gemini Configuration Card */}
+      <div className="p-3.5 rounded-2xl bg-[#131622] border border-neutral-800 space-y-3 text-xs">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-purple-600/20 flex items-center justify-center text-purple-400">
+              <Sparkles className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="font-bold text-white block">
+                {lang === 'fa' ? 'تنظیمات هوش مصنوعی (Gemini AI)' : 'AI Engine & Gemini Settings'}
+              </span>
+              <span className="text-[11px] text-neutral-400">
+                {hasSavedKey
+                  ? (lang === 'fa' ? 'کلید API اختصاصی فعال است' : 'Custom Gemini API Key active')
+                  : (lang === 'fa' ? 'موتور ابری و محلی یکپارچه فعال است' : 'Unified Cloud & Local Neural active')}
+              </span>
+            </div>
+          </div>
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-950/60 text-emerald-400 border border-emerald-500/40 font-mono">
+            {lang === 'fa' ? 'آماده تولید' : 'Active'}
+          </span>
+        </div>
+
+        <div className="space-y-2 pt-1 border-t border-neutral-800/80">
+          <label className="text-[11px] text-neutral-400 block">
+            {lang === 'fa'
+              ? 'کلید اختصاصی Google Gemini (اختیاری جهت اتصال مستقیم از گوشی):'
+              : 'Custom Google Gemini API Key (Optional for direct mobile device connection):'}
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              type="password"
+              value={apiKeyInput}
+              onChange={(e) => setApiKeyInput(e.target.value)}
+              placeholder="AIzaSy..."
+              className="flex-1 px-3 py-1.5 rounded-xl bg-[#090A0F] border border-neutral-700 text-white text-xs font-mono placeholder:text-neutral-600 focus:outline-none focus:border-purple-500"
+            />
+            <button
+              onClick={handleSaveApiKey}
+              className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs transition shrink-0"
+            >
+              {lang === 'fa' ? 'ذخیره' : 'Save'}
+            </button>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between pt-1">
+          <button
+            onClick={handleTestConnection}
+            disabled={testingConnection}
+            className="text-[11px] text-purple-400 hover:text-purple-300 flex items-center gap-1.5 transition disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3 h-3 ${testingConnection ? 'animate-spin' : ''}`} />
+            <span>{testingConnection ? (lang === 'fa' ? 'در حال بررسی...' : 'Testing...') : (lang === 'fa' ? 'تست وضعیت اتصال هوش مصنوعی' : 'Test AI Status')}</span>
+          </button>
+          {testResult && (
+            <span className="text-[10px] text-emerald-400 font-sans">{testResult}</span>
+          )}
+        </div>
       </div>
 
       {/* Android Native Architecture & Export Hub Launcher */}

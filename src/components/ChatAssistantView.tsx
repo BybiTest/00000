@@ -140,13 +140,26 @@ export const ChatAssistantView: React.FC<ChatAssistantViewProps> = ({
                 {isUser ? <User className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
               </div>
               <div
-                className={`max-w-[82%] p-3 rounded-2xl text-xs leading-relaxed ${
+                className={`max-w-[82%] p-3 rounded-2xl text-xs leading-relaxed relative group ${
                   isUser
                     ? 'bg-purple-600 text-white rounded-tr-none'
                     : 'bg-[#131622] text-neutral-200 border border-neutral-800 rounded-tl-none whitespace-pre-wrap'
                 }`}
               >
                 {msg.text}
+                {!isUser && (
+                  <div className="flex justify-end mt-2 pt-1 border-t border-neutral-800/60">
+                    <button
+                      onClick={() => {
+                        navigator.clipboard?.writeText(msg.text);
+                        alert(lang === 'fa' ? 'متن با موفقیت کپی شد!' : 'Copied to clipboard!');
+                      }}
+                      className="text-[10px] text-purple-400 hover:text-purple-300 flex items-center gap-1 font-sans"
+                    >
+                      <span>{lang === 'fa' ? '📋 کپی متن کامل' : '📋 Copy Text'}</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           );

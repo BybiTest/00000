@@ -11,6 +11,17 @@ const PORT = 3000;
 
 app.use(express.json());
 
+// Enable CORS for mobile WebViews and cross-origin requests
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 // Lazy Gemini client initialization
 let genAIClient: GoogleGenAI | null = null;
 function getGenAI(): GoogleGenAI {
@@ -31,6 +42,36 @@ function getGenAI(): GoogleGenAI {
   return genAIClient;
 }
 
+// Resilient Gemini invoker that falls back across supported fast models
+async function callGemini(options: {
+  contents: any;
+  systemInstruction?: string;
+  config?: any;
+}) {
+  const ai = getGenAI();
+  const models = ["gemini-3.1-flash-lite", "gemini-3.8-flash", "gemini-flash-latest"];
+  let lastError: any = null;
+
+  for (const model of models) {
+    try {
+      const mergedConfig = {
+        ...(options.config || {}),
+        ...(options.systemInstruction ? { systemInstruction: options.systemInstruction } : {}),
+      };
+      const response = await ai.models.generateContent({
+        model,
+        contents: options.contents,
+        config: Object.keys(mergedConfig).length > 0 ? mergedConfig : undefined,
+      });
+      return response;
+    } catch (err: any) {
+      lastError = err;
+      console.warn(`[Gemini Fallback] Model ${model} failed, attempting next model... Error:`, err?.message?.slice(0, 100));
+    }
+  }
+  throw lastError;
+}
+
 // Health check
 app.get("/api/health", (_req, res) => {
   res.json({
@@ -48,7 +89,6 @@ app.post("/api/ai/ideas", async (req, res) => {
     if (!topic) {
       return res.status(400).json({ error: "Topic is required" });
     }
-    const ai = getGenAI();
     const prompt = `You are CreatorFlow AI, an elite viral social media strategist developed by سیدحمیدموسوی زاده.
 Generate 4 viral content ideas for:
 - Topic: ${topic}
@@ -64,8 +104,7 @@ Return a JSON array of objects with the following keys for each idea:
 - whyViral: viral psychological trigger
 - estimatedRetention: estimated audience retention strategy`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.8-flash",
+    const response = await callGemini({
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -102,7 +141,6 @@ app.post("/api/ai/hooks", async (req, res) => {
     if (!topic) {
       return res.status(400).json({ error: "Topic is required" });
     }
-    const ai = getGenAI();
     const prompt = `You are a viral retention specialist. Generate high-converting 3-second video hooks for the topic: "${topic}" on ${platform || "Short-form video"}.
 Language: ${language === "fa" ? "Persian (Farsi)" : "English"}.
 
@@ -119,8 +157,7 @@ Return a JSON array of 5 objects with keys:
 - visualAction: recommended on-screen visual cue or gesture
 - psychologicalTrigger: explanation of why this hook stops scrolling`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.8-flash",
+    const response = await callGemini({
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -155,7 +192,6 @@ app.post("/api/ai/scripts", async (req, res) => {
     if (!topic) {
       return res.status(400).json({ error: "Topic is required" });
     }
-    const ai = getGenAI();
     const prompt = `Generate a high-converting, professional short-form video script for:
 - Topic: ${topic}
 - Platform: ${platform}
@@ -180,8 +216,7 @@ Return a JSON object with:
 - callToAction: string
 - visualDirectives: array of strings (b-roll, zoom cuts, text overlays)`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.8-flash",
+    const response = await callGemini({
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -223,7 +258,6 @@ app.post("/api/ai/captions", async (req, res) => {
     if (!videoTopic) {
       return res.status(400).json({ error: "Video topic is required" });
     }
-    const ai = getGenAI();
     const prompt = `Generate 3 distinct high-engagement social media captions for:
 - Video Topic: ${videoTopic}
 - Platform: ${platform}
@@ -242,8 +276,7 @@ Return a JSON array of 3 objects with:
 - callToAction: string
 - hashtags: array of 8-15 researched trending & niche hashtags`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.8-flash",
+    const response = await callGemini({
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -282,7 +315,6 @@ app.post("/api/ai/thumbnails", async (req, res) => {
     if (!title) {
       return res.status(400).json({ error: "Title is required" });
     }
-    const ai = getGenAI();
     const prompt = `You are YouTube CTR master architect at CreatorFlow AI. Generate 3 high-CTR YouTube/Reels thumbnail concepts for:
 Title: "${title}"
 Niche: ${niche || "Content Creation"}
@@ -295,8 +327,7 @@ Return a JSON array of 3 concepts with keys:
 - colorPalette: array of 3 HEX color codes (e.g. ["#8B5CF6", "#FFD700", "#111827"])
 - layoutGuidance: specific framing instructions (rule of thirds, contrast balance, face placement)`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.8-flash",
+    const response = await callGemini({
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -338,7 +369,6 @@ app.post("/api/ai/chat", async (req, res) => {
     if (!message) {
       return res.status(400).json({ error: "Message is required" });
     }
-    const ai = getGenAI();
     const systemInstruction = `You are the CreatorFlow AI Social Media Strategist, developed by سیدحمیدموسوی زاده.
 Role: Professional social media growth strategist, viral content engineer, and creator coach.
 Capabilities:
@@ -361,11 +391,10 @@ Always provide specific, tactical steps rather than generic advice.`;
       },
     ];
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.8-flash",
+    const response = await callGemini({
       contents: formattedContents,
+      systemInstruction,
       config: {
-        systemInstruction,
         temperature: 0.8,
       },
     });
@@ -381,7 +410,6 @@ Always provide specific, tactical steps rather than generic advice.`;
 app.post("/api/ai/analytics-insight", async (req, res) => {
   try {
     const { metrics = {}, platform = "All Platforms", language = "en" } = req.body;
-    const ai = getGenAI();
     const prompt = `You are the Chief Data Strategist at CreatorFlow AI developed by سیدحمیدموسوی زاده.
 Analyze the following creator performance metrics:
 - Views: ${metrics.views || 0}
@@ -399,8 +427,7 @@ Provide a comprehensive audit with:
 - criticalBottlenecks: array of 2 bullet points
 - top3ActionableSteps: array of 3 prioritized tactical actions to double reach this month`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.8-flash",
+    const response = await callGemini({
       contents: prompt,
       config: {
         responseMimeType: "application/json",
