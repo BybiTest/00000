@@ -3,10 +3,14 @@ package com.creatorflow.ai
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.ConsoleMessage
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -14,6 +18,7 @@ import android.widget.FrameLayout
 import android.widget.ProgressBar
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
+import androidx.webkit.WebViewAssetLoader
 
 class MainActivity : ComponentActivity() {
 
@@ -24,7 +29,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Root container
         val rootLayout = FrameLayout(this).apply {
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -33,7 +37,6 @@ class MainActivity : ComponentActivity() {
             setBackgroundColor(0xFF090A0F.toInt())
         }
 
-        // Webview setup
         webView = WebView(this).apply {
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -42,25 +45,30 @@ class MainActivity : ComponentActivity() {
             setBackgroundColor(0xFF090A0F.toInt())
         }
 
-        // Progress bar for initial loading feedback
         progressBar = ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal).apply {
             layoutParams = FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                8
+                10
             )
             isIndeterminate = false
             max = 100
-            progress = 10
+            progress = 15
             visibility = View.VISIBLE
         }
 
-        // Configure WebSettings
+        // Configure WebViewAssetLoader: enables ES Module loading over https://appassets.androidplatform.net
+        val assetLoader = WebViewAssetLoader.Builder()
+            .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
+            .build()
+
         webView.settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true
             databaseEnabled = true
             allowFileAccess = true
             allowContentAccess = true
+            allowFileAccessFromFileURLs = true
+            allowUniversalAccessFromFileURLs = true
             setSupportZoom(false)
             builtInZoomControls = false
             displayZoomControls = false
@@ -71,7 +79,6 @@ class MainActivity : ComponentActivity() {
             mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         }
 
-        // WebChromeClient for loading progress
         webView.webChromeClient = object : WebChromeClient() {
             override fun onProgressChanged(view: WebView?, newProgress: Int) {
                 progressBar.progress = newProgress
@@ -81,10 +88,22 @@ class MainActivity : ComponentActivity() {
                     progressBar.visibility = View.VISIBLE
                 }
             }
+
+            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
+                Log.d("CreatorFlowJS", "${consoleMessage?.message()} -- Line ${consoleMessage?.lineNumber()}")
+                return true
+            }
         }
 
-        // WebViewClient to handle page lifecycle
         webView.webViewClient = object : WebViewClient() {
+            override fun shouldInterceptRequest(
+                view: WebView?,
+                request: WebResourceRequest?
+            ): WebResourceResponse? {
+                val url = request?.url ?: return null
+                return assetLoader.shouldInterceptRequest(url)
+            }
+
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
                 progressBar.visibility = View.VISIBLE
@@ -95,21 +114,20 @@ class MainActivity : ComponentActivity() {
                 progressBar.visibility = View.GONE
             }
 
-            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-                val url = request?.url?.toString() ?: return false
-                if (url.startsWith("file://") || url.startsWith("http://") || url.startsWith("https://")) {
-                    return false
-                }
-                return true
+            override fun onReceivedError(
+                view: WebView?,
+                request: WebResourceRequest?,
+                error: WebResourceError?
+            ) {
+                super.onReceivedError(view, request, error)
+                Log.e("CreatorFlowWeb", "Load error: ${error?.description} code: ${error?.errorCode}")
             }
         }
 
-        // Add views to root layout
         rootLayout.addView(webView)
         rootLayout.addView(progressBar)
         setContentView(rootLayout)
 
-        // Handle Back button
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (webView.canGoBack()) {
@@ -121,8 +139,9 @@ class MainActivity : ComponentActivity() {
             }
         })
 
-        // Load bundled CreatorFlow AI web assets
-        webView.loadUrl("file:///android_asset/dist/index.html")
+        // Secure internal HTTPS URL recognized by WebViewAssetLoader
+        // This completely bypasses file:// CORS and ES Module restrictions!
+        webView.loadUrl("https://appassets.androidplatform.net/assets/index.html")
     }
 
     override fun onResume() {

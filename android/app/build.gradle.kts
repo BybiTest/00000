@@ -68,6 +68,9 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
+    // AndroidX WebKit for safe local asset loading and ES Module execution
+    implementation("androidx.webkit:webkit:1.12.1")
+
     // Kotlin Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 }

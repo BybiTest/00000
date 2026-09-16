@@ -206,8 +206,10 @@ jobs:
           npm install
           npm run build
           mkdir -p android/app/src/main/assets
-          rm -rf android/app/src/main/assets/dist
-          cp -r dist android/app/src/main/assets/dist
+          rm -rf android/app/src/main/assets/*
+          cp -r dist/* android/app/src/main/assets/
+          mkdir -p android/app/src/main/assets/dist
+          cp -r dist/* android/app/src/main/assets/dist/
 
       - name: Set up Java 17
         uses: actions/setup-java@v5

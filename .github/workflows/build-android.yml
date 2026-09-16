@@ -25,14 +25,16 @@ jobs:
         with:
           node-version: 22
 
-      # Build Web Assets & Bundle into Android Assets folder
+      # Build Web Assets & Bundle into Android Assets folders
       - name: Install Web Dependencies and Bundle Android Assets
         run: |
           npm install
           npm run build
           mkdir -p android/app/src/main/assets
-          rm -rf android/app/src/main/assets/dist
-          cp -r dist android/app/src/main/assets/dist
+          rm -rf android/app/src/main/assets/*
+          cp -r dist/* android/app/src/main/assets/
+          mkdir -p android/app/src/main/assets/dist
+          cp -r dist/* android/app/src/main/assets/dist/
 
       # Setup Java 17 (Temurin)
       - name: Set up Java 17
