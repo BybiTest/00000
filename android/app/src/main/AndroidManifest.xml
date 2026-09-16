@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.creatorflow.ai">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- Network permissions for Gemini AI API and Cloud Sync -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -17,13 +16,13 @@
         <!-- Official Developer and Publisher Metadata -->
         <meta-data
             android:name="developer"
-            android:value="سیدحمیدموسوی زاده" />
+            android:value="@string/developer_name" />
         <meta-data
             android:name="publisher"
-            android:value="سیدحمیدموسوی زاده" />
+            android:value="@string/publisher_name" />
         <meta-data
             android:name="app_category"
-            android:value="AI Productivity / Creator Tools" />
+            android:value="@string/app_category" />
 
         <activity
             android:name=".MainActivity"

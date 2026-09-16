@@ -2,17 +2,16 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.ksp)
 }
 
 android {
     namespace = "com.creatorflow.ai"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.creatorflow.ai"
-        minSdk = 26
-        targetSdk = 35
+        minSdk = 24
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0.0"
 
@@ -20,9 +19,6 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-
-        manifestPlaceholders["developer"] = "سیدحمیدموسوی زاده"
-        manifestPlaceholders["appName"] = "CreatorFlow AI"
     }
 
     buildTypes {
@@ -63,10 +59,9 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.5")
     implementation("androidx.navigation:navigation-compose:2.8.0")
 
-    // Room Database
+    // Room Database Runtime
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")
 
     // Retrofit & OkHttp
     implementation("com.squareup.retrofit2:retrofit:2.11.0")

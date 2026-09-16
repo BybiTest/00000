@@ -139,22 +139,21 @@ data class CalendarPost(
 
 android {
     namespace = "com.creatorflow.ai"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.creatorflow.ai"
-        minSdk = 26
-        targetSdk = 35
+        minSdk = 24
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        manifestPlaceholders["developer"] = "سیدحمیدموسوی زاده"
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 }`
@@ -216,35 +215,29 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Accept Android SDK Licenses
-        run: yes | sdkmanager --licenses || true
+        run: |
+          mkdir -p "$ANDROID_HOME/licenses" || true
+          echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > "$ANDROID_HOME/licenses/android-sdk-license" 2>/dev/null || true
+          echo "84831b9409646a918e30573bab4c9c91346d8abd" > "$ANDROID_HOME/licenses/android-sdk-preview-license" 2>/dev/null || true
 
       - name: Prepare Gradle Wrapper
         run: |
-          if [ -d "./android" ]; then
-            cd android
-          fi
+          cd android
           mkdir -p gradle/wrapper
           if [ ! -f "gradle/wrapper/gradle-wrapper.jar" ]; then
             curl -sLo gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.10.2/gradle/wrapper/gradle-wrapper.jar || true
           fi
-          chmod +x gradlew || true
+          chmod +x gradlew
 
       - name: Build Android Debug APK
         run: |
-          if [ -d "./android" ]; then
-            cd android
-          fi
+          cd android
           ./gradlew assembleDebug --stacktrace --no-daemon
 
       - name: Build Android Release AAB
         run: |
-          if [ -d "./android" ]; then
-            cd android
-          fi
+          cd android
           ./gradlew bundleRelease --stacktrace --no-daemon || true
 
       - name: Upload Debug APK
@@ -252,9 +245,7 @@ jobs:
         if: success()
         with:
           name: creatorflow-ai-debug-apk
-          path: |
-            android/app/build/outputs/apk/debug/*.apk
-            app/build/outputs/apk/debug/*.apk
+          path: android/app/build/outputs/apk/debug/*.apk
           if-no-files-found: warn
 
       - name: Upload Release AAB
@@ -262,9 +253,7 @@ jobs:
         if: success()
         with:
           name: creatorflow-ai-release-aab
-          path: |
-            android/app/build/outputs/bundle/release/*.aab
-            app/build/outputs/bundle/release/*.aab
+          path: android/app/build/outputs/bundle/release/*.aab
           if-no-files-found: warn`
     }
   };
