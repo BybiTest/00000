@@ -8,10 +8,12 @@ import { AnalyticsScreenView } from './components/AnalyticsScreenView';
 import { ProfileScreenView } from './components/ProfileScreenView';
 import { ChatAssistantView } from './components/ChatAssistantView';
 import { AndroidProjectHub } from './components/AndroidProjectHub';
+import { SplashScreen } from './components/SplashScreen';
 import { Language, MonetizationPlan, NavTab, StudioSubTool, CalendarPost } from './types';
 
 export default function App() {
   const [lang, setLang] = useState<Language>('fa'); // Start with Persian / RTL as requested by user prompt, toggleable
+  const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState<NavTab>('home');
   const [selectedStudioTool, setSelectedStudioTool] = useState<StudioSubTool>('ideas');
   const [inChatMode, setInChatMode] = useState(false);
@@ -99,6 +101,12 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-neutral-950 font-sans">
+      {showSplash && (
+        <SplashScreen
+          lang={lang}
+          onFinish={() => setShowSplash(false)}
+        />
+      )}
       <AndroidFrame
         isRtl={lang === 'fa'}
         language={lang}

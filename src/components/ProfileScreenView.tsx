@@ -3,6 +3,7 @@ import { User, Crown, Zap, Globe, Smartphone, Terminal, PlayCircle, Info, Key, S
 import { Language, MonetizationPlan } from '../types';
 import { translations } from '../locales';
 import { AboutModal } from './AboutModal';
+import { AppLogo } from './AppLogo';
 
 interface ProfileScreenViewProps {
   lang: Language;
@@ -309,10 +310,10 @@ export const ProfileScreenView: React.FC<ProfileScreenViewProps> = ({
         </div>
 
         <div className="flex items-center gap-3 bg-[#0A0C14] p-2.5 rounded-xl border border-neutral-800/80">
-          <img
-            src="/icon.jpg"
-            alt="CreatorFlow AI Icon"
-            className="w-14 h-14 rounded-2xl object-cover border-2 border-purple-500/40 shadow-lg shadow-purple-950/50 shrink-0"
+          <AppLogo
+            size="lg"
+            shape="squircle"
+            className="w-14 h-14 border-2 border-purple-500/40 shadow-lg shadow-purple-950/50 shrink-0"
           />
           <div className="space-y-1">
             <span className="font-bold text-white block text-xs">CreatorFlow AI (کریتورفلو AI)</span>

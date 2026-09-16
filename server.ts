@@ -22,6 +22,14 @@ app.use((req, res, next) => {
   next();
 });
 
+// Explicitly serve public static assets (icons, splash, banners)
+app.use(express.static(path.join(process.cwd(), "public"), {
+  maxAge: "1d",
+  setHeaders: (res) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+  }
+}));
+
 // Lazy Gemini client initialization
 let genAIClient: GoogleGenAI | null = null;
 function getGenAI(): GoogleGenAI {

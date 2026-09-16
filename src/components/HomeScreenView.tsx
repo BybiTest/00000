@@ -1,5 +1,6 @@
 import React from 'react';
 import { Sparkles, Zap, Flame, ArrowUpRight, Lightbulb, FileText, MessageSquareQuote, Crown } from 'lucide-react';
+import { AppLogo } from './AppLogo';
 import { Language, MonetizationPlan, NavTab } from '../types';
 import { translations } from '../locales';
 
@@ -25,10 +26,10 @@ export const HomeScreenView: React.FC<HomeScreenViewProps> = ({
       {/* Brand Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <img
-            src="/icon.jpg"
-            alt="CreatorFlow AI Icon"
-            className="w-10 h-10 rounded-xl object-cover border border-purple-500/40 shadow-md shadow-purple-950/50"
+          <AppLogo
+            size="md"
+            shape="squircle"
+            className="w-10 h-10 border border-purple-500/40 shadow-md shadow-purple-950/50 shrink-0"
           />
           <div>
             <div className="flex items-center gap-2">

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { X, Sparkles, Copy, Check, Palette, Layers } from 'lucide-react';
+import { AppLogo } from './AppLogo';
+import { APP_ASSETS } from '../utils/assets';
 import { Language } from '../types';
 import { translations } from '../locales';
 
@@ -26,10 +28,10 @@ export const AboutModal: React.FC<AboutModalProps> = ({ lang, onClose }) => {
         {/* Header */}
         <div className="p-4 border-b border-neutral-800 flex items-center justify-between bg-[#131622]">
           <div className="flex items-center gap-3">
-            <img
-              src="/icon.jpg"
-              alt="CreatorFlow AI Icon"
-              className="w-10 h-10 rounded-xl object-cover border border-purple-500/40 shadow-md shadow-purple-950/40"
+            <AppLogo
+              size="md"
+              shape="squircle"
+              className="w-10 h-10 border border-purple-500/40 shadow-md shadow-purple-950/40 shrink-0"
             />
             <div>
               <div className="flex items-center gap-2">
@@ -201,10 +203,10 @@ export const AboutModal: React.FC<AboutModalProps> = ({ lang, onClose }) => {
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <img
-                    src="/icon.jpg"
-                    alt="CreatorFlow AI Master Icon"
-                    className="w-20 h-20 rounded-2xl object-cover border-2 border-purple-500/50 shadow-xl shadow-purple-950/60 shrink-0"
+                  <AppLogo
+                    size="xl"
+                    shape="squircle"
+                    className="w-20 h-20 border-2 border-purple-500/50 shadow-xl shadow-purple-950/60 shrink-0"
                   />
                   <div className="space-y-1 text-[11px] text-neutral-300">
                     <p className="flex items-center gap-1.5 text-white font-semibold">
@@ -235,13 +237,13 @@ export const AboutModal: React.FC<AboutModalProps> = ({ lang, onClose }) => {
                 </p>
                 <div className="flex items-center gap-3 pt-1">
                   <div className="w-12 h-12 rounded-full overflow-hidden border border-purple-500/40">
-                    <img src="/icon.jpg" alt="Round mask" className="w-full h-full object-cover" />
+                    <AppLogo shape="round" className="w-full h-full" />
                   </div>
                   <div className="w-12 h-12 rounded-xl overflow-hidden border border-purple-500/40">
-                    <img src="/icon.jpg" alt="Squircle mask" className="w-full h-full object-cover" />
+                    <AppLogo shape="squircle" className="w-full h-full" />
                   </div>
                   <div className="w-12 h-12 rounded-lg overflow-hidden border border-purple-500/40">
-                    <img src="/icon.jpg" alt="Square mask" className="w-full h-full object-cover" />
+                    <AppLogo shape="square" className="w-full h-full" />
                   </div>
                   <span className="text-[11px] text-neutral-400">
                     {lang === 'fa' ? 'ماسک‌های دایره، اسکویرکل و گوشه‌گرد' : 'Adaptive round, squircle & teardrop masks'}
@@ -255,16 +257,34 @@ export const AboutModal: React.FC<AboutModalProps> = ({ lang, onClose }) => {
                   <span className="font-bold text-white text-xs block">
                     {lang === 'fa' ? 'اسپلش اسکرین (Splash)' : 'Splash Screen (9:16)'}
                   </span>
-                  <div className="aspect-[9/16] rounded-lg overflow-hidden border border-neutral-800 relative group">
-                    <img src="/splash.jpg" alt="Splash Screen" className="w-full h-full object-cover" />
+                  <div className="aspect-[9/16] rounded-lg overflow-hidden border border-neutral-800 relative group bg-neutral-900 flex items-center justify-center">
+                    <img
+                      src={APP_ASSETS.splash}
+                      alt="Splash Screen"
+                      referrerPolicy="no-referrer"
+                      loading="lazy"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = APP_ASSETS.publicSplash;
+                      }}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 </div>
                 <div className="p-3 rounded-xl bg-[#131622] border border-neutral-800 space-y-2">
                   <span className="font-bold text-white text-xs block">
                     {lang === 'fa' ? 'بنر گوگل پلی (16:9)' : 'Store Feature Graphic'}
                   </span>
-                  <div className="aspect-[16/9] rounded-lg overflow-hidden border border-neutral-800 mt-4">
-                    <img src="/feature-graphic.jpg" alt="Store Graphic" className="w-full h-full object-cover" />
+                  <div className="aspect-[16/9] rounded-lg overflow-hidden border border-neutral-800 mt-4 bg-neutral-900 flex items-center justify-center">
+                    <img
+                      src={APP_ASSETS.banner}
+                      alt="Store Graphic"
+                      referrerPolicy="no-referrer"
+                      loading="lazy"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = APP_ASSETS.publicBanner;
+                      }}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <span className="text-[10px] text-neutral-400 block">
                     Google Play 1024x500 Feature Banner

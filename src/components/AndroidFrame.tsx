@@ -1,5 +1,6 @@
 import React from 'react';
 import { Wifi, Battery, Signal, Sparkles } from 'lucide-react';
+import { AppLogo } from './AppLogo';
 import { Language } from '../types';
 
 interface AndroidFrameProps {
@@ -53,10 +54,10 @@ export const AndroidFrame: React.FC<AndroidFrameProps> = ({
       {/* Top Bar Controls for preview */}
       <header className="w-full max-w-md sm:max-w-xl md:max-w-2xl flex items-center justify-between pb-3 px-2 text-xs text-neutral-400">
         <div className="flex items-center gap-2">
-          <img
-            src="/icon.jpg"
-            alt="CreatorFlow AI Icon"
-            className="w-5 h-5 rounded-md object-cover border border-purple-500/40 shadow-sm shadow-purple-900/40"
+          <AppLogo
+            size="sm"
+            shape="square"
+            className="w-5 h-5 border border-purple-500/40 shadow-sm shadow-purple-900/40 shrink-0"
           />
           <span className="font-semibold text-neutral-200">CreatorFlow AI</span>
           <span className="hidden sm:inline text-neutral-400">توسعه‌دهنده: سیدحمیدموسوی زاده</span>
