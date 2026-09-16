@@ -25,10 +25,14 @@ jobs:
         with:
           node-version: 22
 
-      - name: Install Web Dependencies and Build Web Assets
+      # Build Web Assets & Bundle into Android Assets folder
+      - name: Install Web Dependencies and Bundle Android Assets
         run: |
           npm install
           npm run build
+          mkdir -p android/app/src/main/assets
+          rm -rf android/app/src/main/assets/dist
+          cp -r dist android/app/src/main/assets/dist
 
       # Setup Java 17 (Temurin)
       - name: Set up Java 17
@@ -37,11 +41,11 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # Official Gradle Setup with intelligent caching
+      # Official Gradle Setup with caching
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      # Auto-accept all Android SDK licenses instantly without interactive delays
+      # Auto-accept all Android SDK licenses instantly
       - name: Accept Android SDK Licenses
         run: |
           mkdir -p "$ANDROID_HOME/licenses" || true
@@ -49,7 +53,7 @@ jobs:
           echo "84831b9409646a918e30573bab4c9c91346d8abd" > "$ANDROID_HOME/licenses/android-sdk-preview-license" 2>/dev/null || true
           echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> "$ANDROID_HOME/licenses/android-sdk-license" 2>/dev/null || true
 
-      # Guarantee gradle-wrapper.jar exists even if omitted from git commit
+      # Ensure gradle-wrapper.jar exists
       - name: Prepare Gradle Wrapper
         run: |
           cd android

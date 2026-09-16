@@ -134,7 +134,6 @@ data class CalendarPost(
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.ksp)
 }
 
 android {
@@ -201,10 +200,14 @@ jobs:
         with:
           node-version: 22
 
-      - name: Install Web Dependencies and Build Assets
+      # Build Web Assets & Bundle into Android Assets folder
+      - name: Install Web Dependencies and Bundle Android Assets
         run: |
           npm install
           npm run build
+          mkdir -p android/app/src/main/assets
+          rm -rf android/app/src/main/assets/dist
+          cp -r dist android/app/src/main/assets/dist
 
       - name: Set up Java 17
         uses: actions/setup-java@v5
