@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, Send, User, Bot, Trash2, Loader2 } from 'lucide-react';
 import { Language, ChatMessage } from '../types';
 import { translations } from '../locales';
+import { chatWithCreatorAssistant } from '../services/creatorAiEngine';
 
 interface ChatAssistantViewProps {
   lang: Language;
@@ -59,28 +60,15 @@ export const ChatAssistantView: React.FC<ChatAssistantViewProps> = ({
         text: m.text
       }));
 
-      const res = await fetch('/api/ai/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: text.trim(),
-          history,
-          language: lang
-        })
-      });
+      const reply = await chatWithCreatorAssistant(text.trim(), history, lang);
 
-      const data = await res.json();
-      if (data.reply) {
-        const aiMsg: ChatMessage = {
-          id: (Date.now() + 1).toString(),
-          sender: 'assistant',
-          text: data.reply,
-          timestamp: 'Now'
-        };
-        setMessages((prev) => [...prev, aiMsg]);
-      } else {
-        throw new Error(data.error || 'No response from assistant');
-      }
+      const aiMsg: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        sender: 'assistant',
+        text: reply,
+        timestamp: 'Now'
+      };
+      setMessages((prev) => [...prev, aiMsg]);
     } catch (err: any) {
       console.error(err);
       const errorMsg: ChatMessage = {

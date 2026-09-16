@@ -26,6 +26,27 @@ export const AndroidFrame: React.FC<AndroidFrameProps> = ({
   onToggleDevPanel
 }) => {
   const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+  
+  // Detect if running directly on a mobile phone or inside Android APK WebView
+  const isDirectMobile = typeof window !== 'undefined' && (
+    window.location.hostname === 'appassets.androidplatform.net' ||
+    /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
+    window.innerWidth <= 640
+  );
+
+  if (isDirectMobile) {
+    return (
+      <div
+        dir={isRtl ? 'rtl' : 'ltr'}
+        className="w-full min-h-screen bg-[#090A0F] text-neutral-100 flex flex-col font-sans selection:bg-purple-600 selection:text-white"
+        style={{ fontFamily: isRtl ? "'Vazirmatn', sans-serif" : "'Plus Jakarta Sans', sans-serif" }}
+      >
+        <main className="flex-1 w-full max-w-lg mx-auto flex flex-col min-h-screen">
+          {children}
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-4 px-2 sm:px-4 bg-neutral-950 text-neutral-100 selection:bg-purple-600 selection:text-white">
@@ -63,7 +84,7 @@ export const AndroidFrame: React.FC<AndroidFrameProps> = ({
         </div>
       </header>
 
-      {/* Realistic Mobile Device Container */}
+      {/* Realistic Mobile Device Container for Desktop Preview */}
       <div className="relative w-full max-w-[412px] h-[850px] max-h-[92vh] rounded-[42px] p-[10px] bg-neutral-900 shadow-2xl shadow-purple-950/40 border-[3px] border-neutral-700/80 ring-1 ring-neutral-800 flex flex-col overflow-hidden">
         {/* Device Inner Screen */}
         <div

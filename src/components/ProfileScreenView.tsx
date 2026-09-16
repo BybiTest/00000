@@ -26,17 +26,37 @@ export const ProfileScreenView: React.FC<ProfileScreenViewProps> = ({
   const t = translations[lang];
   const [adPlaying, setAdPlaying] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
   const handleSimulateRewardedAd = () => {
     setAdPlaying(true);
     setTimeout(() => {
       setAdPlaying(false);
       onWatchAd();
-    }, 2000);
+      showToast(lang === 'fa' ? '۳ اعتبار رایگان با موفقیت اضافه شد!' : '+3 Free credits added successfully!');
+    }, 1200);
+  };
+
+  const handleUpgradeWithToast = () => {
+    onUpgradeVip();
+    showToast(lang === 'fa' ? 'طرح نامحدود VIP با موفقیت فعال شد!' : 'VIP Unlimited plan activated!');
   };
 
   return (
     <div className="p-4 space-y-4 pb-8">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="p-3 rounded-xl bg-emerald-950/90 border border-emerald-500/50 text-emerald-200 text-xs font-semibold flex items-center justify-between shadow-lg shadow-emerald-950/50 animate-fade-in">
+          <span>{toastMessage}</span>
+          <span className="text-[10px] bg-emerald-800/60 px-2 py-0.5 rounded text-emerald-100">OK</span>
+        </div>
+      )}
+
       {/* Header */}
       <div>
         <h1 className="text-lg font-bold text-white tracking-tight flex items-center gap-1.5">
@@ -91,7 +111,7 @@ export const ProfileScreenView: React.FC<ProfileScreenViewProps> = ({
           <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-neutral-800">
             <button
               id="btn-profile-upgrade-vip"
-              onClick={onUpgradeVip}
+              onClick={handleUpgradeWithToast}
               className="py-2 px-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-amber-900/30 transition"
             >
               <Crown className="w-3.5 h-3.5 text-black" />

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BarChart3, Sparkles, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { Language, AnalyticsData, AnalyticsAudit } from '../types';
 import { translations } from '../locales';
+import { generateAnalyticsAuditInsight } from '../services/creatorAiEngine';
 
 interface AnalyticsScreenViewProps {
   lang: Language;
@@ -43,19 +44,8 @@ export const AnalyticsScreenView: React.FC<AnalyticsScreenViewProps> = ({ lang }
   const handleRunAudit = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/ai/analytics-insight', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          metrics,
-          platform: 'All Platforms',
-          language: lang
-        })
-      });
-      const data = await res.json();
-      if (data.audit) {
-        setAudit(data.audit);
-      }
+      const auditResult = await generateAnalyticsAuditInsight(metrics, 'All Platforms', lang);
+      setAudit(auditResult);
     } catch (e) {
       console.error(e);
     } finally {

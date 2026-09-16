@@ -1,7 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sparkles, Lightbulb, Zap, FileText, MessageSquare, Image, Copy, Check, CalendarPlus, Loader2 } from 'lucide-react';
 import { Language, StudioSubTool, ContentIdea, HookItem, ScriptData, CaptionData, ThumbnailData } from '../types';
 import { translations } from '../locales';
+import {
+  generateContentIdeas,
+  generateContentHooks,
+  generateContentScript,
+  generateContentCaptions,
+  generateContentThumbnails
+} from '../services/creatorAiEngine';
 
 interface StudioScreenViewProps {
   lang: Language;
@@ -29,6 +36,7 @@ export const StudioScreenView: React.FC<StudioScreenViewProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<string | null>(null);
+  const [savedSuccess, setSavedSuccess] = useState<string | null>(null);
 
   const [ideas, setIdeas] = useState<ContentIdea[]>([]);
   const [hooks, setHooks] = useState<HookItem[]>([]);
@@ -36,16 +44,42 @@ export const StudioScreenView: React.FC<StudioScreenViewProps> = ({
   const [captions, setCaptions] = useState<CaptionData[]>([]);
   const [thumbnails, setThumbnails] = useState<ThumbnailData[]>([]);
 
+  // Sync activeTool when initialTool changes
+  useEffect(() => {
+    if (initialTool) {
+      setActiveTool(initialTool);
+    }
+  }, [initialTool]);
+
+  // Pre-load rich templates on first mount so screens are never empty
+  useEffect(() => {
+    const defaultTopic = lang === 'fa' ? 'ترفندهای افزایش بازدید و الگوریتم ریلز' : 'Viral Instagram Reels & Growth Secrets';
+    setTopic(defaultTopic);
+    
+    // Populate rich initial data for immediate utility
+    generateContentIdeas(defaultTopic, niche, platform, audience, lang).then(setIdeas);
+    generateContentHooks(defaultTopic, platform, lang).then(setHooks);
+    generateContentScript(defaultTopic, platform, '45s', 'High Energy', lang).then(setScript);
+    generateContentCaptions(defaultTopic, platform, 'Saves & Shares', lang).then(setCaptions);
+    generateContentThumbnails(defaultTopic, niche, lang).then(setThumbnails);
+  }, [lang]);
+
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
     setCopiedIndex(id);
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
+  const handleSaveWithToast = (title: string, plat: string) => {
+    onSaveToCalendar(title, plat);
+    setSavedSuccess(title);
+    setTimeout(() => setSavedSuccess(null), 2500);
+  };
+
   const handleGenerate = async () => {
+    const currentTopic = topic.trim() || (lang === 'fa' ? 'ترفندهای جذب فالوور و تولید محتوای وایرال' : 'Viral Content & Growth Hacking');
     if (!topic.trim()) {
-      setError(lang === 'fa' ? 'لطفاً موضوع محتوا را وارد کنید.' : 'Please enter a topic to generate.');
-      return;
+      setTopic(currentTopic);
     }
 
     if (!onConsumeCredit()) {
@@ -58,54 +92,24 @@ export const StudioScreenView: React.FC<StudioScreenViewProps> = ({
 
     try {
       if (activeTool === 'ideas') {
-        const res = await fetch('/api/ai/ideas', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ topic, niche, platform, audience, language: lang })
-        });
-        const data = await res.json();
-        if (data.ideas) setIdeas(data.ideas);
-        else throw new Error(data.error || 'Failed to fetch ideas');
+        const result = await generateContentIdeas(currentTopic, niche, platform, audience, lang);
+        setIdeas(result);
       } else if (activeTool === 'hooks') {
-        const res = await fetch('/api/ai/hooks', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ topic, platform, language: lang })
-        });
-        const data = await res.json();
-        if (data.hooks) setHooks(data.hooks);
-        else throw new Error(data.error || 'Failed to fetch hooks');
+        const result = await generateContentHooks(currentTopic, platform, lang);
+        setHooks(result);
       } else if (activeTool === 'scripts') {
-        const res = await fetch('/api/ai/scripts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ topic, platform, targetLength: '45s', tone: 'High Energy', language: lang })
-        });
-        const data = await res.json();
-        if (data.script) setScript(data.script);
-        else throw new Error(data.error || 'Failed to fetch script');
+        const result = await generateContentScript(currentTopic, platform, '45s', 'High Energy', lang);
+        setScript(result);
       } else if (activeTool === 'captions') {
-        const res = await fetch('/api/ai/captions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ videoTopic: topic, platform, ctaGoal: 'Saves & Shares', language: lang })
-        });
-        const data = await res.json();
-        if (data.captions) setCaptions(data.captions);
-        else throw new Error(data.error || 'Failed to fetch captions');
+        const result = await generateContentCaptions(currentTopic, platform, 'Saves & Shares', lang);
+        setCaptions(result);
       } else if (activeTool === 'thumbnails') {
-        const res = await fetch('/api/ai/thumbnails', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title: topic, niche, language: lang })
-        });
-        const data = await res.json();
-        if (data.concepts) setThumbnails(data.concepts);
-        else throw new Error(data.error || 'Failed to fetch thumbnails');
+        const result = await generateContentThumbnails(currentTopic, niche, lang);
+        setThumbnails(result);
       }
     } catch (err: any) {
       console.error(err);
-      setError(err?.message || 'Gemini API call encountered an error');
+      setError(err?.message || 'Error generating content');
     } finally {
       setLoading(false);
     }
